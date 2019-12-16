@@ -15,7 +15,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/resultLayout"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"></LinearLayout>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <VideoView
         android:id="@+id/selectVideoView"
@@ -36,6 +36,15 @@
         app:layout_constraintTop_toTopOf="@+id/selectVideoView">
 
     </FrameLayout>
+
+    <ImageView
+        android:id="@+id/imageView4"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="@+id/selectVideoView"
+        app:layout_constraintEnd_toEndOf="@+id/selectVideoView"
+        app:layout_constraintStart_toStartOf="@+id/selectVideoView"
+        app:layout_constraintTop_toTopOf="@+id/selectVideoView" />
 
     <LinearLayout
         android:id="@+id/resultLayout"

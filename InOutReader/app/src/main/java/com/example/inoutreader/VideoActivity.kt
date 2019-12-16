@@ -1,22 +1,22 @@
 package com.example.inoutreader
 
-import android.graphics.Bitmap
-import android.graphics.Canvas
+import android.graphics.*
 import android.media.MediaMetadataRetriever
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
 import android.util.Log
-import android.util.Size
-import android.view.KeyEvent
+import android.util.LongSparseArray
 import android.widget.MediaController
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.util.set
 import com.example.inoutreader.customview.OverlayView
 import com.example.inoutreader.tflite.Classifier
 import com.example.inoutreader.tflite.TensorFlowImageClassifier
 import com.example.inoutreader.tracking.MultiBoxTracker
 import kotlinx.android.synthetic.main.activity_video.*
 import kotlinx.android.synthetic.main.fragment_video_tracking.*
+import java.lang.Exception
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
@@ -34,6 +34,8 @@ class VideoActivity : AppCompatActivity() {
 
     private lateinit var tflite: Classifier
     private lateinit var tracker: MultiBoxTracker
+
+    private val courtRectF = RectF(80f, 0f, 250f, 300f)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -118,36 +120,101 @@ class VideoActivity : AppCompatActivity() {
 
     private fun recognizeImage() {
         runInBackground(Runnable {
-            do {
-                val frame = (selectVideoView.currentPosition).toLong()
-                Log.d(TAG, "FRAME IN $frame")
+            val paint = Paint().apply {
+                color = Color.RED
+                strokeWidth = 2.0f
+            }
+            Log.d(TAG, LoadingActivity.trackedBox.toString())
 
-                var bitmap = mediaMetadataRetriever.getFrameAtTime(frame * 1000)
-                bitmap = Bitmap.createScaledBitmap(bitmap, INPUT_SIZE, INPUT_SIZE, false)
+            val frame = (selectVideoView.currentPosition).toLong()
+            val convertedFrame = (frame / LoadingActivity.CUT_FRAME) * LoadingActivity.CUT_FRAME
 
-                val results = tflite.recognizeImage(bitmap)
-                Log.d(TAG, results.joinToString())
+            /*LoadingActivity.staticResult[convertedFrame]?.let {
+                tracker.trackResults(it, convertedFrame )
+                tracking_overlay.postInvalidate()
+            }*/
 
-                if (results.size > 0) {
-                    val mappedRecognition = mutableListOf<Classifier.Recognition>()
+            Log.d(TAG, "FRAME IN $frame")
+            var bitmap = mediaMetadataRetriever.getFrameAtTime(52800 * 1000)
+            bitmap = Bitmap.createScaledBitmap(bitmap, INPUT_SIZE, INPUT_SIZE, false)
+            val canvas = Canvas(bitmap)
 
-                    for (result in results) {
-                        val location = result.location
-                        location?.let {
-                            if (result.title == "people") {
-                                target?.let {
-                                    if (it.confidence < result.confidence) target = result
-                                } ?: result
-                            }
-                            result.location = location
-                            mappedRecognition.add(result)
-                        }
-                    }
+            val mappedRecognition = mutableListOf<Classifier.Recognition>()
+            val results = tflite.recognizeImage(bitmap)
 
-                    tracker.trackResults(mappedRecognition, ++timestamp)
-                    tracking_overlay.postInvalidate()
+            for (result in results) {
+                val location = result.location
+                location?.let {
+                    result.location = it
+                    canvas.drawRect(it, paint)
+                    mappedRecognition.add(result)
                 }
-            } while (true)
+            }
+
+            runOnUiThread {
+                imageView4.setImageBitmap(bitmap)
+            }
+
+            recognizeImage()
+                /*val transparent = Bitmap.createBitmap(tmpImg.width, tmpImg.height, Bitmap.Config.ARGB_8888)
+                val canvas = Canvas(transparent)
+                Log.d(TAG, "FRAME IN $frame, CONVERTED : $convertedFrame")
+                canvas.drawRect(LoadingActivity.trackedBox[convertedFrame], paint)
+                Log.d(TAG, LoadingActivity.trackedBox[convertedFrame].toString())
+                runOnUiThread {
+                    imageView4.setImageBitmap(transparent)
+                }*/
+
+                /*if (trackedBox[frame] == null) {
+                    var bitmap = mediaMetadataRetriever.getFrameAtTime(frame * 1000)
+                    bitmap = Bitmap.createScaledBitmap(bitmap, INPUT_SIZE, INPUT_SIZE, false)
+
+                    val results = tflite.recognizeImage(bitmap)
+                    Log.d(TAG, results.joinToString())
+
+                    if (results.size > 0) {
+                        val mappedRecognition = mutableListOf<Classifier.Recognition>()
+
+                        for (result in results) {
+                            val location = result.location
+                            location?.let {
+                                result.location = location
+                                mappedRecognition.add(result)
+
+                                runOnUiThread {
+                                    if (result.center.second > RectF.bottom
+                                    || result.center.second < RectF.top
+                                    || result.center.first > RectF.right
+                                    || result.center.first < RectF.left) {
+                                        changeJudge(false)
+                                    } else changeJudge(true)
+                                }
+                            }
+                        }
+
+                        tracker.trackResults(mappedRecognition, ++timestamp)
+                        trackedBox[frame] = tracker.screenRects[0].second
+                        tracking_overlay.postInvalidate()
+                    }
+                } else {
+                    val paint = Paint().apply {
+                        color = Color.RED
+                        strokeWidth = 2.0f
+                    }
+                    val canvas = Canvas()
+
+                    canvas.drawRect(trackedBox[frame], paint)
+                }*/
         })
+    }
+
+    private fun changeJudge(isIn: Boolean) {
+        if (isIn) {
+            resultLayout.setBackgroundColor(resources.getColor(R.color.colorIn))
+            resultText.text = "IN"
+        } else {
+            resultLayout.setBackgroundColor(resources.getColor(R.color.colorOut))
+            resultText.text = "OUT"
+        }
     }
 }

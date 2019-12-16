@@ -111,7 +111,7 @@ class MultiBoxTracker(context: Context) {
     }
 
     private fun processResults(results: List<Recognition>) {
-        val rectsToTrack: MutableList<Pair<Float, Recognition>> = LinkedList<Pair<Float, Recognition>>()
+        val rectsToTrack: MutableList<Pair<Float, Recognition>> = LinkedList()
         screenRects.clear()
         val rgbFrameToScreen = Matrix(frameToCanvasMatrix)
         for (result in results) {

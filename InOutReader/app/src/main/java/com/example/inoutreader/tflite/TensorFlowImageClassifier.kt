@@ -21,18 +21,20 @@ import kotlin.math.min
 import com.example.inoutreader.tflite.Classifier.Recognition
 
 class TensorFlowImageClassifier private constructor() : Classifier {
+    val TAG = "TensorFlowImageClassifier"
+
     private var interpreter: Interpreter? = null
     private var inputSize = 0
     private var labelList: List<String>? = null
 
-    val outputLocations = Array(1) { Array(NUM_DETECTIONS) {FloatArray(4)} }
-    val outputClasses = Array(1) { FloatArray(NUM_DETECTIONS) }
-    val outputScores = Array(1) { FloatArray(NUM_DETECTIONS) }
-    val numDetections = FloatArray(1)
+    val outputLocations = Array(BATCH_SIZE) { Array(NUM_DETECTIONS) {FloatArray(4)} }
+    val outputClasses = Array(BATCH_SIZE) { FloatArray(NUM_DETECTIONS) }
+    val outputScores = Array(BATCH_SIZE) { FloatArray(NUM_DETECTIONS) }
+    val numDetections = FloatArray(BATCH_SIZE)
 
-    override fun recognizeImage(bitmap: Bitmap): List<Classifier.Recognition> {
+    override fun recognizeImage(bitmap: Bitmap): List<Recognition> {
         val byteBuffer = convertBitmapToByteBuffer(bitmap)
-        val inputArray = Array(1) { byteBuffer }
+        val inputArray = Array(BATCH_SIZE) { byteBuffer }
         val outputMap = mapOf(
             0 to outputLocations,
             1 to outputClasses,
@@ -44,7 +46,7 @@ class TensorFlowImageClassifier private constructor() : Classifier {
         interpreter?.runForMultipleInputsOutputs(inputArray, outputMap)
         val endTime = SystemClock.uptimeMillis()
         val runTime = (endTime - startTime).toString()
-        Log.d(ContentValues.TAG, "recognizeImage: " + runTime + "ms")
+        Log.d(TAG, "recognizeImage: " + runTime + "ms")
         return getSortedResult()
     }
 
@@ -60,11 +62,7 @@ class TensorFlowImageClassifier private constructor() : Classifier {
         val fileChannel = inputStream.channel
         val startOffset = fileDescriptor.startOffset
         val declaredLength = fileDescriptor.declaredLength
-        return fileChannel.map(
-            FileChannel.MapMode.READ_ONLY,
-            startOffset,
-            declaredLength
-        )
+        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset,declaredLength)
     }
 
     @Throws(IOException::class)
@@ -108,24 +106,23 @@ class TensorFlowImageClassifier private constructor() : Classifier {
             Comparator { lhs, rhs ->
                 java.lang.Float.compare(rhs.confidence, lhs.confidence)
             })
-        for (i in 0 until NUM_DETECTIONS) {
+        for (i in 0 until numDetections[0].toInt()) {
             val detection = RectF(
                 outputLocations[0][i][1] * inputSize,
                 outputLocations[0][i][0] * inputSize,
                 outputLocations[0][i][3] * inputSize,
                 outputLocations[0][i][2] * inputSize
             )
-            val labelOffset = 1
+            val labelOffset = 0
+            Log.d("LABEL", "${outputClasses[0][i] + labelOffset}")
             pq.add(
                 Recognition(i.toString(), labelList!![(outputClasses[0][i] + labelOffset).toInt()],
                 outputScores[0][i], detection)
             )
         }
         val recognitions: ArrayList<Recognition> = ArrayList()
-        val recognitionsSize = min(pq.size, MAX_RESULTS)
-        for (i in 0 until recognitionsSize) {
-            recognitions.add(pq.poll()!!)
-        }
+        //val recognitionsSize = min(pq.size, MAX_RESULTS)
+        recognitions.add(pq.poll()!!)
         return recognitions
     }
 
@@ -135,13 +132,14 @@ class TensorFlowImageClassifier private constructor() : Classifier {
         private const val PIXEL_SIZE = 3
         private const val NUM_DETECTIONS = 10
 
-        private val modelPath = "detect.tflite"
-        private val labelPath = "labelmap.txt"
+        private val modelPath = "detect-60000.tflite"
+        private val labelPath = "label.txt"
 
         @Throws(IOException::class)
         fun create(assetManager: AssetManager, inputSize: Int): Classifier {
             val classifier = TensorFlowImageClassifier()
             classifier.interpreter = Interpreter(classifier.loadModelFile(assetManager, modelPath))
+                .apply { setNumThreads(8) }
             classifier.labelList = classifier.loadLabelList(assetManager, labelPath)
             classifier.inputSize = inputSize
             return classifier

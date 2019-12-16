@@ -1,13 +1,18 @@
 package com.example.inoutreader
 
+import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.RectF
 import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
 import android.util.Log
+import android.util.LongSparseArray
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.util.set
 import com.example.inoutreader.tflite.Classifier
 import com.example.inoutreader.tflite.TensorFlowImageClassifier
 import com.example.inoutreader.tracking.MultiBoxTracker
@@ -16,14 +21,19 @@ import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
 class LoadingActivity : AppCompatActivity() {
+    companion object {
+        val CUT_FRAME = 5000
+        val trackedBox = LongSparseArray<RectF>()
+        val staticResult = LongSparseArray<List<Classifier.Recognition>>()
+    }
+
     private val TAG = "LoadingActivity"
     private val INPUT_SIZE = 300
 
     private var handlerThread: HandlerThread? = null
     private var handler: Handler? = null
     private val executor: Executor = Executors.newSingleThreadExecutor()
-    private val results: HashMap<Int, List<Classifier.Recognition>> = hashMapOf()
-    private var frame = 0
+    private var frame = 0L
 
     private lateinit var tflite: Classifier
 
@@ -47,18 +57,38 @@ class LoadingActivity : AppCompatActivity() {
         }
 
         runInBackground( Runnable {
+            val tracker = MultiBoxTracker(this)
+
             while (frame < duration) {
-                loadingBar.progress = frame
+                loadingBar.progress = frame.toInt()
                 Log.d(TAG, "FRAME IN ${frame}ms")
 
-                var bitmap = mediaMetadataRetriever.getFrameAtTime(frame * 1000L)
+                var bitmap = mediaMetadataRetriever.getFrameAtTime(frame * 1000)
                 bitmap = Bitmap.createScaledBitmap(bitmap, INPUT_SIZE, INPUT_SIZE, false)
-                results[frame] = tflite.recognizeImage(bitmap)
-                frame += 5000
+
+                val mappedRecognition = mutableListOf<Classifier.Recognition>()
+                val results = tflite.recognizeImage(bitmap)
+
+                for (result in results) {
+                    val location = result.location
+                    location?.let {
+                        result.location = it
+                        mappedRecognition.add(result)
+                    }
+                }
+
+                staticResult[frame] = mappedRecognition
+                //tracker.trackResults(mappedRecognition, frame)
+                //trackedBox[frame] = tracker.screenRects[0].second
+                frame += CUT_FRAME
             }
 
             mediaMetadataRetriever.release()
-            Log.d(TAG, "$results")
+
+            val intent = Intent(this, VideoActivity::class.java)
+                .apply { data = intent.data }
+            startActivity(intent)
+            finish()
         })
     }
 

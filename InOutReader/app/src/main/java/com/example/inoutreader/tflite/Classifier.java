@@ -2,7 +2,7 @@ package com.example.inoutreader.tflite;
 
 import android.graphics.Bitmap;
 import android.graphics.RectF;
-
+import android.util.Pair;
 import java.util.List;
 
 /** Generic interface for interacting with different recognition engines. */
@@ -30,6 +30,8 @@ public interface Classifier {
     /** Optional location within the source image for the location of the recognized object. */
     private RectF location;
 
+    private Pair<Float, Float> center;
+
     public Recognition(
             final String id, final String title, final Float confidence, final RectF location) {
       this.id = id;
@@ -54,8 +56,11 @@ public interface Classifier {
       return new RectF(location);
     }
 
+    public Pair<Float, Float> getCenter() { return center; }
+
     public void setLocation(RectF location) {
       this.location = location;
+      center = Pair.create((location.left + location.right) / 2, (location.top + location.bottom) / 2);
     }
 
     @Override
