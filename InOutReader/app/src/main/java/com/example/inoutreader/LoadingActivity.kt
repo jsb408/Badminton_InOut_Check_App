@@ -22,7 +22,7 @@ import java.util.concurrent.Executors
 
 class LoadingActivity : AppCompatActivity() {
     companion object {
-        val CUT_FRAME = 5000
+        val CUT_FRAME = 1000
         val trackedBox = LongSparseArray<RectF>()
         val staticResult = LongSparseArray<List<Classifier.Recognition>>()
     }

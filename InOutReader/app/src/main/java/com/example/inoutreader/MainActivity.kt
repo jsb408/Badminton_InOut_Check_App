@@ -42,7 +42,7 @@ class MainActivity : AppCompatActivity() {
         if (requestCode == PICK_FROM_ALBUM) {
             data?.data?.let {
                 try {
-                    val intent = Intent(this, VideoActivity::class.java)
+                    val intent = Intent(this, LoadingActivity::class.java)
                     intent.data = it
                     startActivity(intent)
                 } catch (e: Exception) {

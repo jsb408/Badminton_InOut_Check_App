@@ -120,9 +120,10 @@ class TensorFlowImageClassifier private constructor() : Classifier {
                 outputScores[0][i], detection)
             )
         }
+
         val recognitions: ArrayList<Recognition> = ArrayList()
-        //val recognitionsSize = min(pq.size, MAX_RESULTS)
-        recognitions.add(pq.poll()!!)
+            //val recognitionsSize = min(pq.size, MAX_RESULTS)
+        if (numDetections[0] > 0) recognitions.add(pq.poll()!!)
         return recognitions
     }
 

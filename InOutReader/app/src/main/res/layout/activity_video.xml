@@ -41,6 +41,7 @@
         android:id="@+id/imageView4"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@+id/selectVideoView"
         app:layout_constraintEnd_toEndOf="@+id/selectVideoView"
         app:layout_constraintStart_toStartOf="@+id/selectVideoView"

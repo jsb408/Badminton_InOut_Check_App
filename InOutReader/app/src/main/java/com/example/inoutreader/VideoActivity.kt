@@ -35,7 +35,7 @@ class VideoActivity : AppCompatActivity() {
     private lateinit var tflite: Classifier
     private lateinit var tracker: MultiBoxTracker
 
-    private val courtRectF = RectF(80f, 0f, 250f, 300f)
+    private val courtRectF = RectF(35f, 40f, 250f, 250f)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -127,15 +127,25 @@ class VideoActivity : AppCompatActivity() {
             Log.d(TAG, LoadingActivity.trackedBox.toString())
 
             val frame = (selectVideoView.currentPosition).toLong()
-            val convertedFrame = (frame / LoadingActivity.CUT_FRAME) * LoadingActivity.CUT_FRAME
+            val convertedFrame = ((frame / LoadingActivity.CUT_FRAME) + if (frame % LoadingActivity.CUT_FRAME > LoadingActivity.CUT_FRAME * 0.7) 0 else 0) * LoadingActivity.CUT_FRAME
 
-            /*LoadingActivity.staticResult[convertedFrame]?.let {
-                tracker.trackResults(it, convertedFrame )
-                tracking_overlay.postInvalidate()
-            }*/
+            if (!LoadingActivity.staticResult[convertedFrame].isNullOrEmpty()) {
+                val result = LoadingActivity.staticResult[convertedFrame][0]
+                runOnUiThread {
+                    if (result.center.second > courtRectF.bottom
+                        || result.center.second < courtRectF.top
+                        || result.center.first > courtRectF.right
+                        || result.center.first < courtRectF.left
+                    ) {
+                        changeJudge(false)
+                    } else changeJudge(true)
+                }
+            }
+            tracker.trackResults(LoadingActivity.staticResult[convertedFrame], convertedFrame)
+            tracking_overlay.postInvalidate()
 
             Log.d(TAG, "FRAME IN $frame")
-            var bitmap = mediaMetadataRetriever.getFrameAtTime(52800 * 1000)
+            /*var bitmap = mediaMetadataRetriever.getFrameAtTime(52800 * 1000)
             bitmap = Bitmap.createScaledBitmap(bitmap, INPUT_SIZE, INPUT_SIZE, false)
             val canvas = Canvas(bitmap)
 
@@ -153,7 +163,7 @@ class VideoActivity : AppCompatActivity() {
 
             runOnUiThread {
                 imageView4.setImageBitmap(bitmap)
-            }
+            }*/
 
             recognizeImage()
                 /*val transparent = Bitmap.createBitmap(tmpImg.width, tmpImg.height, Bitmap.Config.ARGB_8888)
