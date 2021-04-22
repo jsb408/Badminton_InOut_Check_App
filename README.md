@@ -1,6 +1,6 @@
 # 배드민턴 IN/OUT 판독기
 
-익명 만남 플랫폼
+배드민턴 경기 시 IN/OUT을 판독해주는 앱
 
 - 진행기간 : 2021. 01. 18 ~ 2021. 02. 21
 - 사용기술 : Android Studio, Kotlin, Tensorflow Lite
