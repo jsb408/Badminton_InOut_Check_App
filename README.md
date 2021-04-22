@@ -2,7 +2,7 @@
 
 배드민턴 경기 시 IN/OUT을 판독해주는 앱
 
-- 진행기간 : 2021. 01. 18 ~ 2021. 02. 21
+- 진행기간 : 2019. 11. ~ 2019. 12.
 - 사용기술 : Android Studio, Kotlin, Tensorflow Lite
 
 <p align="center"><img src="https://user-images.githubusercontent.com/55052074/115536005-420f5680-a2d4-11eb-899c-00e1743a2d15.jpg" width="30%"></p>
