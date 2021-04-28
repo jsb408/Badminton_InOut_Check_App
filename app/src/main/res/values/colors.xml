@@ -4,6 +4,8 @@
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
 
-    <color name="out">#C75252</color>
-    <color name="in">#52C752</color>
+    <color name="colorOut">#C75252</color>
+    <color name="colorIn">#52C752</color>
+
+    <color name="controllerBackground">#82565656</color>
 </resources>

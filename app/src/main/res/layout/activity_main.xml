@@ -7,45 +7,67 @@
     tools:context=".MainActivity">
 
     <ImageView
-        android:id="@+id/imageView2"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_marginTop="105dp"
+        android:id="@+id/imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="400sp"
+        android:layout_marginTop="50dp"
+        android:scaleX="0.5"
+        android:scaleY="0.5"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView"
-        tools:srcCompat="@drawable/shuttlecock" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/badminton"
+        tools:srcCompat="@drawable/badminton" />
 
     <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
-        android:text="in-out 판독기"
+        android:text="IN / OUT\n판독기"
+        android:textAlignment="center"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
-        android:textSize="52sp"
+        android:textSize="42sp"
+        app:layout_constraintBottom_toBottomOf="@+id/imageView"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
-        android:id="@+id/startBtn"
+        android:id="@+id/realtimeBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:text="실시간 판독"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
+
+    <LinearLayout
+        android:id="@+id/videoBtnLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:text="시작"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView2" />
+        app:layout_constraintTop_toBottomOf="@+id/imageView">
 
-    <Button
-        android:id="@+id/menuBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="메뉴"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/startBtn" />
+        <ImageView
+            android:id="@+id/imageView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="5dp"
+            app:srcCompat="@drawable/ic_video_library_black_24dp" />
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:padding="5dp"
+            android:text="동영상 판독" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

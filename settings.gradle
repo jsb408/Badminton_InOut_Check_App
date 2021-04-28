@@ -1,2 +1,2 @@
 include ':app'
-rootProject.name='MaumAITest'
+rootProject.name='InOutReader'
